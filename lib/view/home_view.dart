@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:notes/data/local/database.dart';
+import 'package:notes/routes/routes_name.dart';
 import 'package:notes/utils/app_colors.dart';
 
 class HomeView extends StatefulWidget {
@@ -10,6 +12,21 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   bool notesStore = false;
+  List<Map<String, dynamic>> notesList = [];
+  DatabaseHelper? databaseHelperObject;
+
+  @override
+  void initState() {
+    super.initState();
+    databaseHelperObject = DatabaseHelper.getInstance;
+    accessNotes();
+  }
+
+  void accessNotes() async {
+    notesList = await databaseHelperObject!.fetchAllNotes();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,8 +43,28 @@ class _HomeViewState extends State<HomeView> {
               fontFamily: "Poppins"),
         ),
       ),
-      body: notesStore
-          ? const Text("Display Notes Here")
+      body: notesList.isEmpty
+          ? ListView.builder(
+              itemBuilder: (context, index) {
+                return ListTile(
+                  leading: CircleAvatar(
+                    child: Text(notesList[index].toString()),
+                  ),
+                  title: Text(
+                    notesList[index]
+                        [databaseHelperObject!.tableSecondColumnIsTitle],
+                    style: const TextStyle(
+                        fontFamily: "Poppins", overflow: TextOverflow.ellipsis),
+                  ),
+                  subtitle: Text(
+                    notesList[index]
+                        [databaseHelperObject!.tableThirdColumnIsDescription],
+                    style: const TextStyle(
+                        fontFamily: "Poppins", overflow: TextOverflow.ellipsis),
+                  ),
+                );
+              },
+            )
           : const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -57,7 +94,9 @@ class _HomeViewState extends State<HomeView> {
             size: 30,
             color: AppColors.themeTextColor,
           ),
-          onPressed: () {}),
+          onPressed: () {
+            Navigator.pushNamed(context, RoutesName.addNewScreen);
+          }),
     );
   }
 }

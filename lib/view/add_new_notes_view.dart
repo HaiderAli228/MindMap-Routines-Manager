@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:notes/utils/button.dart';
+import 'package:notes/utils/text_form_fields.dart';
+import 'package:notes/utils/toast_msg.dart';
 
 import '../utils/app_colors.dart';
 
@@ -15,11 +18,13 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        foregroundColor: Colors.white,
         backgroundColor: AppColors.themeColor,
         centerTitle: true,
         title: const Text(
-          "New Notes",
+          "Add New Notes",
           style: TextStyle(
               color: AppColors.themeTextColor,
               fontSize: 18,
@@ -27,28 +32,48 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
               fontFamily: "Poppins"),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Center(
+      body: Center(
+        child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const Image(
+                image: AssetImage("assets/images/2.png"),
+                height: 200,
+                fit: BoxFit.cover,
+              ),
+              TextFormFields(
+                controllerValue: titleController,
+                hintText: "Enter Title Here",
+              ),
+              TextFormFields(
+                controllerValue: descriptionController,
+                hintText: "Enter Description Here",
+                maxLinesIs: 6,
+              ),
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                child: TextFormField(
-                  controller: titleController,
-                  style: const TextStyle(overflow: TextOverflow.ellipsis),
-                  decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: "Study Time",
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      label: const Text("Title"),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      )),
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    Expanded(
+                        child: AppButton(
+                            text: "Save",
+                            onTapFunction: () {
+                              titleController.clear();
+                              descriptionController.clear();
+                            })),
+                    Expanded(
+                        child: AppButton(
+                            text: "Cancel",
+                            onTapFunction: () {
+                              ToastMsg.toastMsg("Cancelled");
+                              Navigator.pop(context);
+                            })),
+                  ],
                 ),
+              ),
+              const SizedBox(
+                height: 200,
               )
             ],
           ),
