@@ -6,7 +6,9 @@ import '../data/local/database.dart';
 import '../utils/app_colors.dart';
 
 class AddNewNotesView extends StatefulWidget {
-  const AddNewNotesView({super.key});
+  final Map<String, dynamic>? note;
+
+  const AddNewNotesView({super.key, this.note});
 
   @override
   State<AddNewNotesView> createState() => _AddNewNotesViewState();
@@ -22,6 +24,13 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
   void initState() {
     super.initState();
     databaseHelperObject = DatabaseHelper.getInstance;
+
+    if (widget.note != null) {
+      titleController.text =
+          widget.note![databaseHelperObject!.tableSecondColumnIsTitle];
+      descriptionController.text =
+          widget.note![databaseHelperObject!.tableThirdColumnIsDescription];
+    }
   }
 
   @override
@@ -32,9 +41,9 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
         foregroundColor: Colors.white,
         backgroundColor: AppColors.themeColor,
         centerTitle: true,
-        title: const Text(
-          "Add New Notes",
-          style: TextStyle(
+        title: Text(
+          widget.note == null ? "Add New Notes" : "Update Notes",
+          style: const TextStyle(
               color: AppColors.themeTextColor,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -67,28 +76,46 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
                   child: Row(
                     children: [
                       Expanded(
-                          child: AppButton(
-                              text: "Save",
-                              onTapFunction: () {
-                                if (formKey.currentState!.validate()) {
-                                  databaseHelperObject!.addNewNotes(
-                                      titleIs: titleController.text.toString(),
-                                      descriptionIs: descriptionController.text
-                                          .toString());
-                                  ToastMsg.toastMsg("New Notes Saved");
-                                  titleController.clear();
-                                  descriptionController.clear();
-                                  // Pass true to indicate a new note was added
-                                  Navigator.pop(context, true);
+                        child: AppButton(
+                            text: widget.note == null ? "Save" : "Update",
+                            onTapFunction: () {
+                              if (formKey.currentState!.validate()) {
+                                if (widget.note == null) {
+                                  // Add new note
+                                  databaseHelperObject!
+                                      .addNewNotes(
+                                    titleIs: titleController.text,
+                                    descriptionIs: descriptionController.text,
+                                  )
+                                      .then((_) {
+                                    ToastMsg.toastMsg("New Note Saved");
+                                    Navigator.pop(context, true);
+                                  });
+                                } else {
+                                  // Update existing note
+                                  databaseHelperObject!
+                                      .updateNotes(
+                                    titleIs: titleController.text,
+                                    descriptionIs: descriptionController.text,
+                                    indexIs: widget.note![databaseHelperObject!
+                                        .tableFirstColumnIsSeNum],
+                                  )
+                                      .then((_) {
+                                    ToastMsg.toastMsg("Notes Updated");
+                                    Navigator.pop(context, true);
+                                  });
                                 }
-                              })),
+                              }
+                            }),
+                      ),
                       Expanded(
-                          child: AppButton(
-                              text: "Cancel",
-                              onTapFunction: () {
-                                ToastMsg.toastMsg("Cancelled");
-                                Navigator.pop(context, false);
-                              })),
+                        child: AppButton(
+                            text: "Cancel",
+                            onTapFunction: () {
+                              ToastMsg.toastMsg("Cancelled");
+                              Navigator.pop(context, false);
+                            }),
+                      ),
                     ],
                   ),
                 ),
