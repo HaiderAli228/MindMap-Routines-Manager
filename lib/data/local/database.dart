@@ -47,4 +47,19 @@ class DatabaseHelper {
     List<Map<String, dynamic>> fetchData = await databaseRef.query(tableName);
     return fetchData;
   }
+
+  updateNotes(
+      {required String titleIs,
+      required String descriptionIs,
+      required int indexIs}) async {
+    final databaseRef = await gettingDatabase();
+    databaseRef.update(
+        tableName,
+        {
+          tableSecondColumnIsTitle: titleIs,
+          tableThirdColumnIsDescription: descriptionIs
+        },
+        where: "$tableFirstColumnIsSeNum = ? ",
+        whereArgs: ['$indexIs']);
+  }
 }
