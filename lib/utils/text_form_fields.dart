@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:form_field_validator/form_field_validator.dart';
 
 class TextFormFields extends StatelessWidget {
   const TextFormFields(
@@ -15,6 +16,8 @@ class TextFormFields extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
       child: TextFormField(
         controller: controllerValue,
+        validator:
+            MultiValidator([RequiredValidator(errorText: "Required ")]).call,
         style: const TextStyle(overflow: TextOverflow.ellipsis),
         maxLines: maxLinesIs ?? 1,
         decoration: InputDecoration(

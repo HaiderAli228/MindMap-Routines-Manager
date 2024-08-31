@@ -6,7 +6,7 @@ class ToastMsg {
     return Fluttertoast.showToast(
         fontSize: 18,
         gravity: ToastGravity.CENTER,
-        toastLength: Toast.LENGTH_LONG,
+        toastLength: Toast.LENGTH_SHORT,
         msg: msgIS,
         backgroundColor: AppColors.themeColor,
         textColor: AppColors.themeTextColor);

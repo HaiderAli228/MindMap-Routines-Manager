@@ -11,9 +11,10 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  bool notesStore = false;
   List<Map<String, dynamic>> notesList = [];
+  List<Map<String, dynamic>> filteredNotesList = [];
   DatabaseHelper? databaseHelperObject;
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -24,7 +25,22 @@ class _HomeViewState extends State<HomeView> {
 
   void accessNotes() async {
     notesList = await databaseHelperObject!.fetchAllNotes();
-    setState(() {});
+    setState(() {
+      filteredNotesList = notesList;
+    });
+  }
+
+  void filterNotes(String query) {
+    final filtered = notesList.where((note) {
+      final title = note[databaseHelperObject!.tableSecondColumnIsTitle]
+          .toString()
+          .toLowerCase();
+      return title.contains(query.toLowerCase());
+    }).toList();
+
+    setState(() {
+      filteredNotesList = filtered;
+    });
   }
 
   @override
@@ -43,60 +59,109 @@ class _HomeViewState extends State<HomeView> {
               fontFamily: "Poppins"),
         ),
       ),
-      body: notesList.isEmpty
-          ? ListView.builder(
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: CircleAvatar(
-                    child: Text(notesList[index].toString()),
-                  ),
-                  title: Text(
-                    notesList[index]
-                        [databaseHelperObject!.tableSecondColumnIsTitle],
-                    style: const TextStyle(
-                        fontFamily: "Poppins", overflow: TextOverflow.ellipsis),
-                  ),
-                  subtitle: Text(
-                    notesList[index]
-                        [databaseHelperObject!.tableThirdColumnIsDescription],
-                    style: const TextStyle(
-                        fontFamily: "Poppins", overflow: TextOverflow.ellipsis),
-                  ),
-                );
-              },
-            )
-          : const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Image(
-                    image: AssetImage("assets/images/1.png"),
-                    fit: BoxFit.cover,
-                    width: 300,
-                  ),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Text(
-                    "No Notes Created Yet",
-                    style: TextStyle(fontFamily: "Poppins", fontSize: 16),
-                  )
-                ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: TextFormField(
+              controller: searchController,
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.all(15),
+                hintText: "Search by Title",
+                hintStyle: const TextStyle(fontFamily: "Poppins"),
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Colors.grey.shade100,
+                border: InputBorder.none,
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade100)),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade100)),
               ),
+              onChanged: filterNotes,
             ),
-      floatingActionButton: FloatingActionButton(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-          backgroundColor: AppColors.themeColor,
-          child: const Icon(
-            Icons.add,
-            size: 30,
-            color: AppColors.themeTextColor,
           ),
-          onPressed: () {
-            Navigator.pushNamed(context, RoutesName.addNewScreen);
-          }),
+          Expanded(
+            child: filteredNotesList.isNotEmpty
+                ? ListView.builder(
+                    itemCount: filteredNotesList.length,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        padding: const EdgeInsets.all(5),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 6),
+                        decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(10)),
+                        child: ListTile(
+                          title: Text(
+                            filteredNotesList[index][
+                                databaseHelperObject!.tableSecondColumnIsTitle],
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontFamily: "Poppins",
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                          subtitle: Text(
+                            filteredNotesList[index][databaseHelperObject!
+                                .tableThirdColumnIsDescription],
+                            maxLines: 3,
+                            style: const TextStyle(
+                                fontFamily: "Poppins",
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                        ),
+                      );
+                    },
+                  )
+                : const SingleChildScrollView(
+                  child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 60,),
+                          Image(
+                            image: AssetImage("assets/images/1.png"),
+                            fit: BoxFit.cover,
+                            width: 300,
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Text(
+                            "No Notes Created Yet",
+                            style: TextStyle(fontFamily: "Poppins", fontSize: 16),
+                          )
+                        ],
+                      ),
+                    ),
+                ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+        backgroundColor: AppColors.themeColor,
+        child: const Icon(
+          Icons.add,
+          size: 30,
+          color: AppColors.themeTextColor,
+        ),
+        onPressed: () async {
+          // Wait for the result from the AddNewNotesView
+          final isNewNoteAdded = await Navigator.pushNamed<bool?>(
+            context,
+            RoutesName.addNewScreen,
+          );
+          // If a new note was added, refresh the notes list
+          if (isNewNoteAdded == true) {
+            accessNotes();
+          }
+        },
+      ),
     );
   }
 }
