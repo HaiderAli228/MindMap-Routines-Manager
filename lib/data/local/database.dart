@@ -48,12 +48,12 @@ class DatabaseHelper {
     return fetchData;
   }
 
-  updateNotes(
+  Future<bool> updateNotes(
       {required String titleIs,
       required String descriptionIs,
       required int indexIs}) async {
     final databaseRef = await gettingDatabase();
-    databaseRef.update(
+    int rowEffectedIs = await databaseRef.update(
         tableName,
         {
           tableSecondColumnIsTitle: titleIs,
@@ -61,5 +61,13 @@ class DatabaseHelper {
         },
         where: "$tableFirstColumnIsSeNum = ? ",
         whereArgs: ['$indexIs']);
+    return rowEffectedIs > 0;
+  }
+
+  Future<bool> deleteNotes({required int indexIs}) async {
+    final databaseRef = await gettingDatabase();
+    int rowEffectedIs = await databaseRef.delete(tableName,
+        where: "$tableFirstColumnIsSeNum = ? ", whereArgs: ['$indexIs']);
+    return rowEffectedIs > 0;
   }
 }
