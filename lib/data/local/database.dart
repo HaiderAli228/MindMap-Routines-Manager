@@ -4,9 +4,11 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+//this is the class that manage the data related to database
 class DatabaseHelper {
   DatabaseHelper._();
-  static final DatabaseHelper getInstance = DatabaseHelper._();
+  static final DatabaseHelper getInstance =
+      DatabaseHelper._(); // make static variable that store object of class
   Database? dbObject;
 
   final String tableName = "notes";
