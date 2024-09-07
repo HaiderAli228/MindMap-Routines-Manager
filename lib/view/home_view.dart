@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:notes/data/local/database.dart';
 import 'package:notes/routes/routes_name.dart';
 import 'package:notes/utils/app_colors.dart';
@@ -241,24 +242,28 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         );
                       },
                     )
-                  : const SingleChildScrollView(
+                  : SingleChildScrollView(
                       child: Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               height: 60,
                             ),
-                            Image(
-                              image: AssetImage("assets/images/1.png"),
-                              fit: BoxFit.cover,
-                              width: 300,
-                            ),
-                            SizedBox(
+                            Lottie.asset("assets/images/animation.json",
+                                fit: BoxFit.cover,
+                                repeat: true,
+                                alignment: Alignment.center),
+                            // Image(
+                            //   image: AssetImage("assets/images/1.png"),
+                            //   fit: BoxFit.cover,
+                            //   width: 300,
+                            // ),
+                            const SizedBox(
                               height: 20,
                             ),
-                            Text(
+                            const Text(
                               "No Notes Created Yet",
                               style: TextStyle(
                                 fontFamily: "Poppins",
