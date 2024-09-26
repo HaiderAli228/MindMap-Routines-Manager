@@ -42,6 +42,7 @@ dependencies:
   sqflite: ^2.3.3+1
   lottie: ^3.1.2
   flutter_splash_screen: ^3.0.0
+  fancy_popups_new: ^0.0.6
 
 
 dev_dependencies:
