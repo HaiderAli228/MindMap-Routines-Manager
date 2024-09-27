@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:notes/data/local/database.dart';
-import 'package:notes/routes/routes_name.dart';
 import 'package:notes/utils/app_colors.dart';
 import 'package:notes/utils/toast_msg.dart';
-import 'visual_screen.dart'; // Add the import
 
 import 'add_new_notes_view.dart';
 
@@ -130,25 +128,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             fontFamily: "Poppins",
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () {
-              // Open the VisualScreen when the calendar button is clicked
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VisualScreen(
-                    onDateSelected: (selectedDate) {
-                      // Do something with the selected date (optional)
-                    },
-                    notesList: notesList, // Pass the notes list
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: InkWell(
         onTap: () {
