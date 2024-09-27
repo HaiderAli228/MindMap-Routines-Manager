@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notes/routes/routes_name.dart';
+import 'package:notes/view/visual_screen.dart';
 
 import '../view/add_new_notes_view.dart';
 import '../view/home_view.dart';
@@ -14,6 +15,13 @@ class Routes {
       case RoutesName.addNewScreen:
         return _buildPageRoute(
           const AddNewNotesView(),
+        );
+      case RoutesName.visualScreen:
+        return _buildPageRoute(
+          VisualScreen(
+            onDateSelected: (DateTime) {},
+            notesList: [],
+          ),
         );
       default:
         return _buildPageRoute(

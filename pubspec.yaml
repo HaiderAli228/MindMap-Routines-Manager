@@ -41,6 +41,8 @@ dependencies:
   fluttertoast: ^8.2.8
   sqflite: ^2.3.3+1
   fl_chart: ^0.69.0
+  intl:
+  table_calendar: ^3.1.2
   lottie: ^3.1.2
   flutter_splash_screen: ^3.0.0
   fancy_popups_new: ^0.0.6
