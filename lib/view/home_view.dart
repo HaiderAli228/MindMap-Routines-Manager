@@ -113,6 +113,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  bool cardView = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -120,9 +121,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       appBar: AppBar(
         actions: [
           IconButton(
-              onPressed: () {},
+              onPressed: () {
+                setState(() {
+                  cardView = !cardView ;
+                });
+              },
               icon: Icon(
-                Icons.menu,
+                cardView ? Icons.menu : Icons.list_alt,
                 color: Colors.white,
               ))
         ],
