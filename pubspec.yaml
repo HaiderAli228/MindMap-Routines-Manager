@@ -43,6 +43,7 @@ dependencies:
   fl_chart: ^0.69.0
   intl:
   table_calendar: ^3.1.2
+  flutter_staggered_grid_view: ^0.7.0
   lottie: ^3.1.2
   flutter_splash_screen: ^3.0.0
   fancy_popups_new: ^0.0.6
