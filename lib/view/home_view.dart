@@ -3,7 +3,6 @@ import 'package:lottie/lottie.dart';
 import 'package:notes/data/local/database.dart';
 import 'package:notes/utils/app_colors.dart';
 import 'package:notes/utils/toast_msg.dart';
-
 import 'add_new_notes_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -58,8 +57,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   void _checkReadMoreVisibility() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (int i = 0; i < filteredNotesList.length; i++) {
-        final text = filteredNotesList[i]
-        [databaseHelperObject!.tableThirdColumnIsDescription];
+        final text = filteredNotesList[i][databaseHelperObject!.tableThirdColumnIsDescription];
         final textSpan = TextSpan(
           text: text,
           style: const TextStyle(fontFamily: "Poppins"),
@@ -69,8 +67,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           maxLines: 3,
           textDirection: TextDirection.ltr,
         );
-        textPainter.layout(
-            maxWidth: MediaQuery.of(context).size.width - 150);
+        textPainter.layout(maxWidth: MediaQuery.of(context).size.width - 150);
         final didExceedMaxLines = textPainter.didExceedMaxLines;
 
         if (didExceedMaxLines) {
@@ -179,16 +176,101 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               child: filteredNotesList.isNotEmpty
                   ? (isGalleryView
                   ? GridView.builder(
-                  gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 2 / 2.5),
-                  itemCount: filteredNotesList.length,
-                  itemBuilder: (context, index) {
-                    final note = filteredNotesList[index];
-                    return Container(
-                      padding: const EdgeInsets.all(8.0),
-                      margin: const EdgeInsets.all(5.0),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  childAspectRatio: 1,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: filteredNotesList.length,
+                itemBuilder: (context, index) {
+                  final note = filteredNotesList[index];
+                  final noteId = note[databaseHelperObject!.tableFirstColumnIsSeNum];
+                  final isExpanded = expandedStates[index];
+
+                  return Container(
+                    padding: const EdgeInsets.all(8.0),
+                    margin: const EdgeInsets.all(5.0),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                note[databaseHelperObject!.tableSecondColumnIsTitle],
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: "Poppins",
+                                ),
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              color: Colors.grey.shade100,
+                              onSelected: (value) => _handleMenuSelection(value, noteId),
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'Update',
+                                  child: Text('Update'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'Delete',
+                                  child: Text('Delete'),
+                                ),
+                              ],
+                              icon: const Icon(Icons.more_vert, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          note[databaseHelperObject!.tableThirdColumnIsDescription],
+                          maxLines: isExpanded ? null : 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: "Poppins",
+                          ),
+                        ),
+                        if (showReadMoreButtons[index])
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                expandedStates[index] = !isExpanded;
+                              });
+                            },
+                            child: Text(
+                              isExpanded ? "Hide" : "Read More",
+                              style: const TextStyle(
+                                color: AppColors.themeColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              )
+                  : ListView.builder(
+                itemCount: filteredNotesList.length,
+                itemBuilder: (context, index) {
+                  final note = filteredNotesList[index];
+                  final noteId = note[databaseHelperObject!.tableFirstColumnIsSeNum];
+                  final isExpanded = expandedStates[index];
+
+                  return AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: Container(
+                      padding: const EdgeInsets.only(top: 5, left: 5, bottom: 5),
+                      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(10),
@@ -196,139 +278,88 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            note[databaseHelperObject!
-                                .tableSecondColumnIsTitle],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: "Poppins",
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  note[databaseHelperObject!.tableSecondColumnIsTitle],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: "Poppins",
+                                  ),
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                color: Colors.grey.shade100,
+                                onSelected: (value) => _handleMenuSelection(value, noteId),
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'Update',
+                                    child: Text('Update'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'Delete',
+                                    child: Text('Delete'),
+                                  ),
+                                ],
+                                icon: const Icon(Icons.more_vert, color: Colors.grey),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            note[databaseHelperObject!
-                                .tableThirdColumnIsDescription],
-                            maxLines: 5,
+                            note[databaseHelperObject!.tableThirdColumnIsDescription],
+                            maxLines: isExpanded ? null : 3,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontFamily: "Poppins",
                             ),
                           ),
+                          if (showReadMoreButtons[index])
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  expandedStates[index] = !isExpanded;
+                                });
+                              },
+                              child: Text(
+                                isExpanded ? "Hide" : "Read More",
+                                style: const TextStyle(
+                                  color: AppColors.themeColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
-                    );
-                  })
-                  : ListView.builder(
-                  itemCount: filteredNotesList.length,
-                  itemBuilder: (context, index) {
-                    final note = filteredNotesList[index];
-                    final noteId = note[databaseHelperObject!
-                        .tableFirstColumnIsSeNum];
-                    final isExpanded = expandedStates[index];
-
-                    return AnimatedSize(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      child: Container(
-                        padding: const EdgeInsets.only(
-                            top: 5, left: 5, bottom: 5),
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 15, vertical: 6),
-                        decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(10)),
-                        child: ListTile(
-                          title: Text(
-                            note[databaseHelperObject!
-                                .tableSecondColumnIsTitle],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: "Poppins",
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment:
-                            CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                note[databaseHelperObject!
-                                    .tableThirdColumnIsDescription],
-                                maxLines: isExpanded ? null : 3,
-                                style: const TextStyle(
-                                  fontFamily: "Poppins",
-                                ),
-                              ),
-                              if (showReadMoreButtons[index])
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      expandedStates[index] =
-                                      !isExpanded;
-                                    });
-                                  },
-                                  child: Text(
-                                    isExpanded ? "Hide" : "Read More",
-                                    style: const TextStyle(
-                                      color: AppColors.themeColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          trailing: PopupMenuButton<String>(
-                            color: Colors.grey.shade100,
-                            onSelected: (value) =>
-                                _handleMenuSelection(value, noteId),
-                            itemBuilder: (context) => [
-                              const PopupMenuItem(
-                                value: 'Update',
-                                child: Text('Update'),
-                              ),
-                              const PopupMenuItem(
-                                value: 'Delete',
-                                child: Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }))
-                  : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Lottie.asset("assets/lottie/no_task_found.json",
-                      width: 200),
-                  const Text(
-                    "No Notes Found",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontFamily: "Poppins",
                     ),
-                  ),
-                ],
+                  );
+                },
+              ))
+                  : Center(
+                child: Lottie.asset("assets/lottie/no_data.json"),
               ),
-            ),
+            )
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.themeColor,
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddNewNotesView()),
-          ).then((_) {
-            accessNotes();
-            setState(() {
-              ToastMsg.toastMsg("New Note Added");
-            });
-          });
+            MaterialPageRoute(
+              builder: (context) => const AddNewNotesView(),
+            ),
+          ).then((_) => accessNotes());
         },
-        child: const Icon(Icons.add),
+        backgroundColor: AppColors.themeColor,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+        ),
       ),
     );
   }
