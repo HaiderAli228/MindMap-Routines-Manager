@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
+import 'package:notes/routes/routes_name.dart';
+
+import '../utils/app_colors.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -10,20 +14,31 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView> {
   @override
+  void initState() {
+    super.initState();
+    Timer(
+      const Duration(seconds: 4),
+      () {
+        Navigator.pushReplacementNamed(context, RoutesName.homeScreen);
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset("assets/images/second.json",
-                fit: BoxFit.cover, height: 300, width: 400),
-            const Text(
+            Image(image: AssetImage("assets/images/ss.png")),
+            Text(
               "Notes",
               style: TextStyle(
                   fontSize: 30,
                   fontFamily: "Poppins",
+                  color: AppColors.themeColor,
                   fontWeight: FontWeight.bold),
             )
           ],

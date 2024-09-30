@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         primaryColor: AppColors.themeColor,
         useMaterial3: true,
       ),
-      initialRoute: RoutesName.homeScreen,
+      initialRoute: RoutesName.splashScreen,
       onGenerateRoute: Routes.generateRoutes,
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notes/routes/routes_name.dart';
+import 'package:notes/view/splash_view.dart';
 
 import '../view/add_new_notes_view.dart';
 import '../view/home_view.dart';
@@ -14,6 +15,10 @@ class Routes {
       case RoutesName.addNewScreen:
         return _buildPageRoute(
           const AddNewNotesView(),
+        );
+      case RoutesName.splashScreen:
+        return _buildPageRoute(
+          const SplashView(),
         );
 
       default:

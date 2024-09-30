@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:lottie/lottie.dart';
-import 'package:notes/data/local/database.dart';
-import 'package:notes/utils/app_colors.dart';
-import 'package:notes/utils/toast_msg.dart';
+
+import '../data/local/database.dart';
+import '../utils/app_colors.dart';
+import '../utils/toast_msg.dart';
 import 'add_new_notes_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -20,9 +21,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   TextEditingController searchController = TextEditingController();
   List<bool> expandedStates = [];
   List<bool> showReadMoreButtons = [];
-
   FocusNode searchFocusNode = FocusNode();
-
   bool isGalleryView = false; // Boolean for toggling view
 
   @override
@@ -34,6 +33,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   void accessNotes() async {
     notesList = await databaseHelperObject!.fetchAllNotes();
+
+    // Reverse the list to show the latest notes first
+    notesList = notesList.reversed.toList();
+
     setState(() {
       filteredNotesList = notesList;
       expandedStates = List<bool>.filled(notesList.length, false);
@@ -72,11 +75,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         textPainter.layout(maxWidth: MediaQuery.of(context).size.width - 150);
         final didExceedMaxLines = textPainter.didExceedMaxLines;
 
-        if (didExceedMaxLines) {
-          showReadMoreButtons[i] = true;
-        } else {
-          showReadMoreButtons[i] = false;
-        }
+        showReadMoreButtons[i] = didExceedMaxLines;
       }
       setState(() {});
     });
@@ -126,9 +125,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               });
             },
             icon: Icon(
-              isGalleryView
-                  ? Icons.list_rounded
-                  : Icons.grid_view, // Icon toggle
+              isGalleryView ? Icons.list_rounded : Icons.grid_view,
               color: Colors.white,
               size: 25,
             ),
@@ -225,13 +222,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                                   value, noteId),
                                           itemBuilder: (context) => [
                                             const PopupMenuItem(
-                                              value: 'Update',
-                                              child: Text('Update'),
-                                            ),
+                                                value: 'Update',
+                                                child: Text('Update')),
                                             const PopupMenuItem(
-                                              value: 'Delete',
-                                              child: Text('Delete'),
-                                            ),
+                                                value: 'Delete',
+                                                child: Text('Delete')),
                                           ],
                                           icon: const Icon(Icons.more_vert,
                                               color: Colors.grey),
@@ -242,12 +237,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                     Text(
                                       note[databaseHelperObject!
                                           .tableThirdColumnIsDescription],
-                                      maxLines: 3,
+                                      maxLines: 4,
                                       overflow: TextOverflow
                                           .ellipsis, // Add ellipsis if text is long
                                       style: const TextStyle(
-                                        fontFamily: "Poppins",
-                                      ),
+                                          fontFamily: "Poppins"),
                                     ),
                                   ],
                                 ),
@@ -304,12 +298,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                             },
                                             child: Text(
                                               isExpanded
-                                                  ? 'Read less'
-                                                  : 'Read more',
+                                                  ? 'Read Less'
+                                                  : 'Read More',
                                               style: const TextStyle(
-                                                color: AppColors.themeColor,
-                                                fontFamily: "Poppins",
-                                              ),
+                                                  color: AppColors.themeColor,
+                                                  fontFamily: "Poppins"),
                                             ),
                                           ),
                                       ],
@@ -320,13 +313,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                           _handleMenuSelection(value, noteId),
                                       itemBuilder: (context) => [
                                         const PopupMenuItem(
-                                          value: 'Update',
-                                          child: Text('Update'),
-                                        ),
+                                            value: 'Update',
+                                            child: Text('Update')),
                                         const PopupMenuItem(
-                                          value: 'Delete',
-                                          child: Text('Delete'),
-                                        ),
+                                            value: 'Delete',
+                                            child: Text('Delete')),
                                       ],
                                       icon: const Icon(Icons.more_vert,
                                           color: Colors.grey),
@@ -337,26 +328,46 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                             },
                           ))
                     : Center(
-                        child: Lottie.asset(
-                          "assets/animations/empty.json",
-                          width: 300,
-                          height: 300,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Lottie.asset("assets/images/animation.json"),
+                            const Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: Text(
+                                "No notes created yet",
+                                style: TextStyle(
+                                  fontFamily: "Poppins",
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 100,
+                            )
+                          ],
                         ),
                       ),
-              )
+              ),
             ],
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.themeColor,
-        child: const Icon(Icons.add, color: Colors.white),
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddNewNotesView()),
+            MaterialPageRoute(
+              builder: (context) => const AddNewNotesView(),
+            ),
           ).then((_) => accessNotes());
         },
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 30,
+        ),
       ),
     );
   }
