@@ -23,13 +23,14 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
   @override
   void initState() {
     super.initState();
+
+    // Initialize the database helper object to interact with the local database
     databaseHelperObject = DatabaseHelper.getInstance;
 
+    // If a note was passed (for updating), pre-fill the title and description fields
     if (widget.note != null) {
-      titleController.text =
-          widget.note![databaseHelperObject!.tableSecondColumnIsTitle];
-      descriptionController.text =
-          widget.note![databaseHelperObject!.tableThirdColumnIsDescription];
+      titleController.text = widget.note![databaseHelperObject!.tableSecondColumnIsTitle];
+      descriptionController.text = widget.note![databaseHelperObject!.tableThirdColumnIsDescription];
     }
   }
 
@@ -97,8 +98,7 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
                                       .updateNotes(
                                     titleIs: titleController.text,
                                     descriptionIs: descriptionController.text,
-                                    indexIs: widget.note![databaseHelperObject!
-                                        .tableFirstColumnIsSeNum],
+                                    indexIs: widget.note![databaseHelperObject!.tableFirstColumnIsSeNum],
                                   )
                                       .then((_) {
                                     ToastMsg.toastMsg("Notes Updated");

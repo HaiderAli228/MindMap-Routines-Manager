@@ -1,14 +1,11 @@
 import 'dart:io';
-
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-//this is the class that manage the data related to database
 class DatabaseHelper {
   DatabaseHelper._();
-  static final DatabaseHelper getInstance =
-      DatabaseHelper._(); // make static variable that store object of class
+  static final DatabaseHelper getInstance = DatabaseHelper._(); // Singleton pattern
   Database? dbObject;
 
   final String tableName = "notes";
@@ -22,15 +19,11 @@ class DatabaseHelper {
   }
 
   Future<Database> openTheDatabase() async {
-    // create database folder if not exist
     Directory appDirectory = await getApplicationDocumentsDirectory();
-    String dbPath = join(
-        appDirectory.path, "notesFolder.db"); // open database in the folder
+    String dbPath = join(appDirectory.path, "notesFolder.db");
     return await openDatabase(dbPath, onCreate: (db, version) {
-      // sql use table to store data in database , here create first tables
       db.execute(
-          // this is sql query that are use to create the table in database .
-          "create table $tableName ($tableFirstColumnIsSeNum integer primary key autoincrement , $tableSecondColumnIsTitle text , $tableThirdColumnIsDescription text)");
+          "CREATE TABLE $tableName ($tableFirstColumnIsSeNum INTEGER PRIMARY KEY AUTOINCREMENT, $tableSecondColumnIsTitle TEXT, $tableThirdColumnIsDescription TEXT)");
     }, version: 1);
   }
 
@@ -52,8 +45,8 @@ class DatabaseHelper {
 
   Future<bool> updateNotes(
       {required String titleIs,
-      required String descriptionIs,
-      required int indexIs}) async {
+        required String descriptionIs,
+        required int indexIs}) async {
     final databaseRef = await gettingDatabase();
     int rowEffectedIs = await databaseRef.update(
         tableName,
@@ -61,15 +54,15 @@ class DatabaseHelper {
           tableSecondColumnIsTitle: titleIs,
           tableThirdColumnIsDescription: descriptionIs
         },
-        where: "$tableFirstColumnIsSeNum = ? ",
-        whereArgs: ['$indexIs']);
+        where: "$tableFirstColumnIsSeNum = ?",
+        whereArgs: [indexIs]);
     return rowEffectedIs > 0;
   }
 
   Future<bool> deleteNotes({required int indexIs}) async {
     final databaseRef = await gettingDatabase();
     int rowEffectedIs = await databaseRef.delete(tableName,
-        where: "$tableFirstColumnIsSeNum = ? ", whereArgs: ['$indexIs']);
+        where: "$tableFirstColumnIsSeNum = ?", whereArgs: [indexIs]);
     return rowEffectedIs > 0;
   }
 }
