@@ -29,13 +29,20 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
 
     // If a note was passed (for updating), pre-fill the title and description fields
     if (widget.note != null) {
-      titleController.text = widget.note![databaseHelperObject!.tableSecondColumnIsTitle];
-      descriptionController.text = widget.note![databaseHelperObject!.tableThirdColumnIsDescription];
+      titleController.text =
+          widget.note![databaseHelperObject!.tableSecondColumnIsTitle];
+      descriptionController.text =
+          widget.note![databaseHelperObject!.tableThirdColumnIsDescription];
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Fetch screen size to make UI responsive
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isLargeScreen =
+        screenWidth > 600; // Check for larger screens like tablets or web
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -53,20 +60,26 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
       ),
       body: Center(
         child: SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: isLargeScreen ? 100 : 15, // Dynamic horizontal padding
+            vertical: 20,
+          ),
           child: Form(
             key: formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Image(
-                  image: AssetImage("assets/images/2.png"),
-                  height: 200,
+                Image(
+                  image: const AssetImage("assets/images/2.png"),
+                  height: isLargeScreen ? 300 : 200, // Adjust image size
                   fit: BoxFit.cover,
                 ),
+                const SizedBox(height: 20),
                 TextFormFields(
                   controllerValue: titleController,
                   hintText: "Enter Title Here",
                 ),
+                const SizedBox(height: 20),
                 TextFormFields(
                   controllerValue: descriptionController,
                   hintText: "Enter Description Here",
@@ -98,7 +111,8 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
                                       .updateNotes(
                                     titleIs: titleController.text,
                                     descriptionIs: descriptionController.text,
-                                    indexIs: widget.note![databaseHelperObject!.tableFirstColumnIsSeNum],
+                                    indexIs: widget.note![databaseHelperObject!
+                                        .tableFirstColumnIsSeNum],
                                   )
                                       .then((_) {
                                     ToastMsg.toastMsg("Notes Updated");
@@ -108,6 +122,7 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
                               }
                             }),
                       ),
+                      const SizedBox(width: 10), // Add spacing between buttons
                       Expanded(
                         child: AppButton(
                             text: "Cancel",
@@ -119,9 +134,7 @@ class _AddNewNotesViewState extends State<AddNewNotesView> {
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 200,
-                )
+                const SizedBox(height: 100),
               ],
             ),
           ),
