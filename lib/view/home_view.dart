@@ -15,84 +15,69 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
-  List<Map<String, dynamic>> notesList = []; // List to hold all notes.
-  List<Map<String, dynamic>> filteredNotesList =
-      []; // List to hold filtered notes.
-  DatabaseHelper?
-      databaseHelperObject; // Database helper object to interact with the local database.
-  TextEditingController searchController =
-      TextEditingController(); // Controller for search field.
-  List<bool> expandedStates =
-      []; // List to manage expanded/collapsed states of list items.
-  List<bool> showReadMoreButtons =
-      []; // List to manage visibility of "Read More" buttons.
-  FocusNode searchFocusNode = FocusNode(); // Focus node for search field.
-  bool isGalleryView =
-      false; // Boolean to toggle between list and gallery view.
+  List<Map<String, dynamic>> notesList = [];
+  List<Map<String, dynamic>> filteredNotesList = [];
+  DatabaseHelper? databaseHelperObject;
+  TextEditingController searchController = TextEditingController();
+  List<bool> expandedStates = [];
+  List<bool> showReadMoreButtons = [];
+  FocusNode searchFocusNode = FocusNode();
+  bool isGalleryView = false;
 
   @override
   void initState() {
     super.initState();
-    databaseHelperObject =
-        DatabaseHelper.getInstance; // Initialize the database helper.
-    accessNotes(); // Fetch notes from the database on initialization.
+    databaseHelperObject = DatabaseHelper.getInstance;
+    accessNotes();
   }
 
-  // Fetch all notes from the database and reverse the list to show the latest first.
   void accessNotes() async {
     notesList = await databaseHelperObject!.fetchAllNotes();
     notesList = notesList.reversed.toList();
-
-    // Update state to populate filtered notes and manage expanded states and "Read More" visibility.
     setState(() {
       filteredNotesList = notesList;
       expandedStates = List<bool>.filled(notesList.length, false);
       showReadMoreButtons = List<bool>.filled(notesList.length, false);
-      _checkReadMoreVisibility(); // Check if notes need a "Read More" button based on content length.
+      _checkReadMoreVisibility();
     });
   }
 
-  // Filter notes based on the search query entered by the user.
   void filterNotes(String query) {
     final filtered = notesList.where((note) {
       final title = note[databaseHelperObject!.tableSecondColumnIsTitle]
           .toString()
           .toLowerCase();
-      return title
-          .contains(query.toLowerCase()); // Match query against note titles.
+      return title.contains(query.toLowerCase());
     }).toList();
 
     setState(() {
-      filteredNotesList = filtered; // Update filtered list based on the query.
+      filteredNotesList = filtered;
     });
   }
 
-  // Check if notes exceed a certain number of lines and should display a "Read More" button.
   void _checkReadMoreVisibility() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (int i = 0; i < filteredNotesList.length; i++) {
         final text = filteredNotesList[i]
-            [databaseHelperObject!.tableThirdColumnIsDescription];
+        [databaseHelperObject!.tableThirdColumnIsDescription];
         final textSpan = TextSpan(
           text: text,
           style: const TextStyle(fontFamily: "Poppins"),
         );
         final textPainter = TextPainter(
           text: textSpan,
-          maxLines: 3, // Set maximum number of lines to check for truncation.
+          maxLines: 3,
           textDirection: TextDirection.ltr,
         );
         textPainter.layout(maxWidth: MediaQuery.of(context).size.width - 150);
         final didExceedMaxLines = textPainter.didExceedMaxLines;
 
-        showReadMoreButtons[i] =
-            didExceedMaxLines; // Show button if content exceeds max lines.
+        showReadMoreButtons[i] = didExceedMaxLines;
       }
-      setState(() {}); // Update the state once calculations are done.
+      setState(() {});
     });
   }
 
-  // Handle selection from the options menu (Update or Delete notes).
   void _handleMenuSelection(String value, int noteId) {
     if (value == 'Update') {
       Navigator.push(
@@ -100,21 +85,19 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         MaterialPageRoute(
           builder: (context) => AddNewNotesView(
             note: filteredNotesList.firstWhere((note) =>
-                note[databaseHelperObject!.tableFirstColumnIsSeNum] == noteId),
+            note[databaseHelperObject!.tableFirstColumnIsSeNum] == noteId),
           ),
         ),
-      ).then((_) =>
-          accessNotes()); // Refresh notes after returning from the update screen.
+      ).then((_) => accessNotes());
     } else if (value == 'Delete') {
       databaseHelperObject!.deleteNotes(indexIs: noteId).then((success) {
         if (success) {
-          accessNotes(); // Refresh the list after deletion.
+          accessNotes();
           setState(() {
-            ToastMsg.toastMsg("Deleted"); // Show a success message on deletion.
+            ToastMsg.toastMsg("Deleted");
           });
         } else {
-          ToastMsg.toastMsg(
-              "Not Deleted"); // Show an error message if deletion fails.
+          ToastMsg.toastMsg("Not Deleted");
         }
       });
     }
@@ -122,28 +105,27 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    searchFocusNode
-        .dispose(); // Dispose the focus node when the widget is removed.
+    searchFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isWeb = screenSize.width >= 600; // Define a threshold for web layout
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         actions: [
-          // Toggle between list view and grid view.
           IconButton(
             onPressed: () {
               setState(() {
-                isGalleryView = !isGalleryView; // Toggle gallery view state.
+                isGalleryView = !isGalleryView;
               });
             },
             icon: Icon(
-              isGalleryView
-                  ? Icons.list_rounded
-                  : Icons.grid_view, // Change icon based on view.
+              isGalleryView ? Icons.list_rounded : Icons.grid_view,
               color: Colors.white,
               size: 25,
             ),
@@ -163,14 +145,12 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       ),
       body: InkWell(
         onTap: () {
-          FocusScope.of(context)
-              .unfocus(); // Unfocus search field when tapping outside.
+          FocusScope.of(context).unfocus();
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
+          padding: EdgeInsets.symmetric(horizontal: isWeb ? 50 : 15),
           child: Column(
             children: [
-              // Search field for filtering notes by title.
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 15),
                 child: TextFormField(
@@ -193,179 +173,204 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       borderSide: BorderSide(color: Colors.grey.shade100),
                     ),
                   ),
-                  onChanged:
-                      filterNotes, // Call filter function when the search query changes.
+                  onChanged: filterNotes,
                 ),
               ),
               Expanded(
                 child: filteredNotesList.isNotEmpty
                     ? (isGalleryView
-                        ? MasonryGridView.count(
-                            crossAxisCount:
-                                2, // Display notes in two columns (grid view).
-                            itemCount: filteredNotesList.length,
-                            mainAxisSpacing: 10,
-                            crossAxisSpacing: 10,
-                            itemBuilder: (context, index) {
-                              final note = filteredNotesList[index];
-                              final noteId = note[databaseHelperObject!
-                                  .tableFirstColumnIsSeNum];
-                              return Container(
-                                padding: const EdgeInsets.all(8.0),
-                                margin: const EdgeInsets.symmetric(
-                                    horizontal: 3, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(10),
+                    ? MasonryGridView.count(
+                  crossAxisCount: isWeb ? 4 : 2, // Adjust based on screen size
+                  itemCount: filteredNotesList.length,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  itemBuilder: (context, index) {
+                    final note = filteredNotesList[index];
+                    final noteId = note[databaseHelperObject!
+                        .tableFirstColumnIsSeNum];
+                    return Container(
+                      padding: const EdgeInsets.all(8.0),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 3, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  note[databaseHelperObject!
+                                      .tableSecondColumnIsTitle],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: "Poppins",
+                                  ),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Note title with menu options.
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            note[databaseHelperObject!
-                                                .tableSecondColumnIsTitle],
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontFamily: "Poppins",
-                                            ),
-                                          ),
-                                        ),
-                                        PopupMenuButton<String>(
-                                          color: Colors.grey.shade100,
-                                          onSelected: (value) =>
-                                              _handleMenuSelection(value,
-                                                  noteId), // Handle menu actions.
-                                          itemBuilder: (context) => [
-                                            const PopupMenuItem(
-                                                value: 'Update',
-                                                child: Text('Update')),
-                                            const PopupMenuItem(
-                                                value: 'Delete',
-                                                child: Text('Delete')),
-                                          ],
-                                          icon: const Icon(Icons.more_vert,
-                                              color: Colors.grey),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 5),
-                                    // Note description.
-                                    Text(
-                                      note[databaseHelperObject!
-                                          .tableThirdColumnIsDescription],
-                                      maxLines: 4,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                          fontFamily: "Poppins"),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : ListView.builder(
-                            itemCount:
-                                filteredNotesList.length, // List view of notes.
-                            itemBuilder: (context, index) {
-                              final note = filteredNotesList[index];
-                              final noteId = note[databaseHelperObject!
-                                  .tableFirstColumnIsSeNum];
-                              final isExpanded = expandedStates[index];
-                              final hasReadMoreButton =
-                                  showReadMoreButtons[index];
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 15),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: ListTile(
-                                  title: Text(
+                              ),
+                              PopupMenuButton<String>(
+                                color: Colors.grey.shade100,
+                                onSelected: (value) =>
+                                    _handleMenuSelection(value,
+                                        noteId),
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                      value: 'Update',
+                                      child: Text('Update')),
+                                  const PopupMenuItem(
+                                      value: 'Delete',
+                                      child: Text('Delete')),
+                                ],
+                                icon: const Icon(Icons.more_vert,
+                                    color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            note[databaseHelperObject!
+                                .tableThirdColumnIsDescription],
+                            maxLines: 4,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontFamily: "Poppins"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                )
+                    : ListView.builder(
+                  itemCount: filteredNotesList.length,
+                  itemBuilder: (context, index) {
+                    final note = filteredNotesList[index];
+                    final noteId = note[databaseHelperObject!
+                        .tableFirstColumnIsSeNum];
+                    final isExpanded = expandedStates[index];
+                    final hasReadMoreButton =
+                    showReadMoreButtons[index];
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
                                     note[databaseHelperObject!
                                         .tableSecondColumnIsTitle],
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontFamily: "Poppins",
                                     ),
                                   ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Note description.
-                                      Text(
-                                        note[databaseHelperObject!
-                                            .tableThirdColumnIsDescription],
-                                        maxLines: isExpanded ? null : 3,
-                                        overflow: isExpanded
-                                            ? TextOverflow.visible
-                                            : TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                            fontFamily: "Poppins"),
-                                      ),
-                                      // Conditionally display "Read More"/"Show Less" button.
-                                      if (hasReadMoreButton)
-                                        TextButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              expandedStates[index] =
-                                                  !isExpanded; // Toggle expanded state.
-                                            });
-                                          },
-                                          child: Text(
-                                            isExpanded
-                                                ? 'Show Less'
-                                                : 'Read More', // Text changes based on state.
-                                            style: const TextStyle(
-                                                fontFamily: "Poppins"),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  trailing: PopupMenuButton<String>(
-                                    color: Colors.grey.shade100,
-                                    onSelected: (value) => _handleMenuSelection(
-                                        value, noteId), // Handle menu options.
-                                    itemBuilder: (context) => [
-                                      const PopupMenuItem(
-                                          value: 'Update',
-                                          child: Text('Update')),
-                                      const PopupMenuItem(
-                                          value: 'Delete',
-                                          child: Text('Delete')),
-                                    ],
-                                    icon: const Icon(Icons.more_vert,
-                                        color: Colors.grey),
+                                ),
+                                PopupMenuButton<String>(
+                                  color: Colors.grey.shade100,
+                                  onSelected: (value) =>
+                                      _handleMenuSelection(
+                                          value, noteId),
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                        value: 'Update',
+                                        child: Text('Update')),
+                                    const PopupMenuItem(
+                                        value: 'Delete',
+                                        child: Text('Delete')),
+                                  ],
+                                  icon: const Icon(Icons.more_vert,
+                                      color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 5),
+                            AnimatedSize(
+                              duration:
+                              const Duration(milliseconds: 200),
+                              child: Text(
+                                note[databaseHelperObject!
+                                    .tableThirdColumnIsDescription],
+                                maxLines: isExpanded ? null : 3,
+                                overflow: TextOverflow.fade,
+                                style: const TextStyle(
+                                    fontFamily: "Poppins"),
+                              ),
+                            ),
+                            if (hasReadMoreButton)
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    expandedStates[index] =
+                                    !isExpanded;
+                                  });
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 5),
+                                  child: Text(
+                                    isExpanded
+                                        ? "Read less"
+                                        : "Read more",
+                                    style: TextStyle(
+                                      fontFamily: "Poppins",
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.themeColor,
+                                    ),
                                   ),
                                 ),
-                              );
-                            }))
-                    : Lottie.asset(
-                        "assets/animations/no_notes.json"), // Display Lottie animation if no notes.
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ))
+                    : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Lottie.asset("assets/lottie/noTask.json",
+                        height: 200, width: 200),
+                    const Text(
+                      "No Notes Found",
+                      style: TextStyle(
+                        fontFamily: "Poppins",
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
       ),
-      // Floating Action Button to add a new note.
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    const AddNewNotesView()), // Navigate to add note screen.
-          ).then((_) => accessNotes()); // Refresh notes after returning.
+              builder: (context) => const AddNewNotesView(),
+            ),
+          ).then((value) => accessNotes());
         },
         backgroundColor: AppColors.themeColor,
         child: const Icon(
